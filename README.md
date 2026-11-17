@@ -2,6 +2,8 @@
 
 API REST construida con **Node.js + Express + Prisma + PostgreSQL**, aplicando N capas, MVC y los patrones Singleton, Repository y Chain of Responsibility.
 
+**Despliegue en Render:** https://api-productos-1hdu.onrender.com/api
+
 ## Requisitos
 
 - Node.js >= 18 (probado con Node 26)
@@ -111,7 +113,7 @@ Error:
 
 ## Endpoints
 
-Base: `http://localhost:3000/api`
+Base local: `http://localhost:3000/api` · Base en Render: `https://api-productos-1hdu.onrender.com/api`
 
 ### Autenticación
 
@@ -221,11 +223,13 @@ curl -X DELETE -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/Prod
 
 ## Despliegue en Render
 
-El servicio Web Service apunta a `https://github.com/paolita711/ejercicioORM` (rama `main`) y usa una base de datos PostgreSQL de Render.
+El Web Service usa una base de datos PostgreSQL de Render y hace autodeploy desde `main`.
 
-- **Build command:** `npm install`
+- **Repo:** `https://github.com/paolita711/ejercicioORM` (rama `main`)
+- **Build command:** `npm install && npm run db:migrate`
 - **Start command:** `npm start`
-- **Pre-deploy command:** `npm run db:migrate`
 - **Health check path:** `/api/health`
+
+> El plan free de Render no ejecuta pre-deploy commands, por eso las migraciones de Prisma se ejecutan durante el build.
 
 Variables de entorno configuradas en Render: `NODE_ENV`, `PORT`, `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `BCRYPT_ROUNDS`, `CORS_ORIGINS`. El `DATABASE_URL` y el `JWT_SECRET` se gestionan como secretos y no se versionan.
