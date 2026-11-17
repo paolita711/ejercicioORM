@@ -368,6 +368,7 @@ function openModal(product) {
   state.editingId = product ? product.id : null;
   el.modalTitle.textContent = product ? 'Editar producto' : 'Nuevo producto';
   el.saveBtn.textContent = product ? 'Guardar cambios' : 'Crear producto';
+  el.saveBtn.dataset.original = el.saveBtn.textContent;
   el.pNombre.value = product ? product.nombre : '';
   el.pDescripcion.value = product && product.descripcion ? product.descripcion : '';
   el.pPrecio.value = product ? Number(product.precio).toFixed(2) : '';
