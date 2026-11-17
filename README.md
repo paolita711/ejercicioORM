@@ -2,7 +2,8 @@
 
 API REST construida con **Node.js + Express + Prisma + PostgreSQL**, aplicando N capas, MVC y los patrones Singleton, Repository y Chain of Responsibility.
 
-**Despliegue en Render:** https://api-productos-1hdu.onrender.com/api
+**API en Render:** https://api-productos-1hdu.onrender.com/api  
+**Frontend en GitHub Pages:** https://paolita711.github.io/ejercicioORM/
 
 ## Requisitos
 
@@ -233,3 +234,21 @@ El Web Service usa una base de datos PostgreSQL de Render y hace autodeploy desd
 > El plan free de Render no ejecuta pre-deploy commands, por eso las migraciones de Prisma se ejecutan durante el build.
 
 Variables de entorno configuradas en Render: `NODE_ENV`, `PORT`, `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `BCRYPT_ROUNDS`, `CORS_ORIGINS`. El `DATABASE_URL` y el `JWT_SECRET` se gestionan como secretos y no se versionan.
+
+## Frontend en GitHub Pages
+
+El panel estático vive en `docs/` y se publica desde `main` con GitHub Pages (build type `legacy`).
+
+- **URL:** https://paolita711.github.io/ejercicioORM/
+- **Archivos:** `docs/index.html`, `docs/styles.css`, `docs/app.js`
+- **API base:** `https://api-productos-1hdu.onrender.com/api`
+- **Funciones:** registro/login con JWT, roles, listado paginado, búsqueda, filtro por categoría, orden, crear/editar/eliminar productos.
+
+El origen `https://paolita711.github.io` está incluido en `CORS_ORIGINS` de Render. Para probar el frontend en local:
+
+```bash
+cd docs
+python -m http.server 8000
+```
+
+Luego abre `http://localhost:8000`. El origen `http://localhost:8000` también está permitido por CORS.

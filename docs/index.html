@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Frontend para la API REST de productos con Express, Prisma y PostgreSQL.">
+  <title>Productos · Panel de administración</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">P</div>
+        <div>
+          <strong>Productos<span class="brand-dot">.</span></strong>
+          <small>API REST · Express + Prisma</small>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span id="apiStatus" class="status-badge status-loading">API: comprobando…</span>
+        <span id="userChip" class="user-chip" hidden></span>
+        <button id="logoutBtn" class="btn btn-ghost" type="button" hidden>Salir</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="authView" class="auth-layout">
+        <div class="auth-card">
+          <div class="auth-header">
+            <span class="eyebrow">Acceso al panel</span>
+            <h1>Bienvenido de nuevo</h1>
+            <p>Ingresa o crea una cuenta para gestionar el catálogo.</p>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Formularios de acceso">
+            <button id="tabLogin" class="tab tab-active" type="button" role="tab" aria-selected="true">Iniciar sesión</button>
+            <button id="tabRegister" class="tab" type="button" role="tab" aria-selected="false">Crear cuenta</button>
+          </div>
+
+          <form id="loginForm" class="form" novalidate>
+            <label for="loginEmail">Correo electrónico</label>
+            <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="tu@correo.com" required>
+
+            <label for="loginPassword">Contraseña</label>
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres" required>
+
+            <div id="authError" class="alert alert-error" hidden></div>
+            <button class="btn btn-primary btn-block" type="submit" id="loginSubmit">Entrar</button>
+          </form>
+
+          <form id="registerForm" class="form" novalidate hidden>
+            <label for="regNombre">Nombre</label>
+            <input id="regNombre" name="nombre" type="text" autocomplete="name" placeholder="Tu nombre" required minlength="2">
+
+            <label for="regEmail">Correo electrónico</label>
+            <input id="regEmail" name="email" type="email" autocomplete="email" placeholder="tu@correo.com" required>
+
+            <label for="regPassword">Contraseña</label>
+            <input id="regPassword" name="password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+
+            <label for="regRol">Rol</label>
+            <select id="regRol" name="rol">
+              <option value="editor">Editor · puede crear y editar</option>
+              <option value="admin">Admin · puede crear, editar y eliminar</option>
+            </select>
+
+            <div id="registerError" class="alert alert-error" hidden></div>
+            <button class="btn btn-primary btn-block" type="submit" id="registerSubmit">Crear cuenta</button>
+          </form>
+
+          <p class="auth-footnote">La sesión se guarda solo en este navegador.</p>
+        </div>
+
+        <aside class="hero">
+          <span class="eyebrow eyebrow-light">Panel de productos</span>
+          <h2>Todo tu catálogo, en una sola pantalla.</h2>
+          <p>Consulta, crea, edita y elimina productos usando la misma API desplegada en Render.</p>
+          <ul class="hero-list">
+            <li>Autenticación con JWT y roles</li>
+            <li>Listado con paginación y filtros</li>
+            <li>CRUD completo con validaciones</li>
+          </ul>
+          <code>https://api-productos-1hdu.onrender.com/api</code>
+        </aside>
+      </section>
+
+      <section id="appView" class="app-view" hidden>
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">Catálogo</span>
+            <h1>Productos</h1>
+            <p id="listMeta" class="muted">Cargando…</p>
+          </div>
+          <button id="newBtn" class="btn btn-primary" type="button">+ Nuevo producto</button>
+        </div>
+
+        <div class="toolbar">
+          <input id="searchInput" class="input-search" type="search" placeholder="Buscar por nombre o categoría…" aria-label="Buscar productos">
+          <select id="categoryFilter" aria-label="Filtrar por categoría">
+            <option value="">Todas las categorías</option>
+          </select>
+          <select id="sortSelect" aria-label="Ordenar productos">
+            <option value="id-desc">Más recientes</option>
+            <option value="id-asc">Más antiguos</option>
+            <option value="nombre-asc">Nombre A–Z</option>
+            <option value="precio-asc">Precio: menor a mayor</option>
+            <option value="precio-desc">Precio: mayor a menor</option>
+            <option value="stock-asc">Menor stock</option>
+          </select>
+          <button id="refreshBtn" class="btn btn-secondary" type="button">Actualizar</button>
+        </div>
+
+        <div id="productGrid" class="product-grid"></div>
+        <div id="emptyState" class="empty-state" hidden>
+          <div class="empty-icon" aria-hidden="true">⌕</div>
+          <h2>Sin resultados</h2>
+          <p>Prueba con otra búsqueda o crea un producto nuevo.</p>
+        </div>
+
+        <nav id="pagination" class="pagination" aria-label="Paginación de productos"></nav>
+      </section>
+    </main>
+
+    <div id="modalBackdrop" class="modal-backdrop" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+          <h2 id="modalTitle">Nuevo producto</h2>
+          <button id="closeModalBtn" class="icon-btn" type="button" aria-label="Cerrar">×</button>
+        </div>
+        <form id="productForm" novalidate>
+          <label for="pNombre">Nombre</label>
+          <input id="pNombre" name="nombre" type="text" placeholder="Ej. Teclado mecánico" required minlength="2">
+
+          <label for="pDescripcion">Descripción</label>
+          <textarea id="pDescripcion" name="descripcion" rows="3" placeholder="Descripción opcional"></textarea>
+
+          <div class="form-row">
+            <div>
+              <label for="pPrecio">Precio (USD)</label>
+              <input id="pPrecio" name="precio" type="number" min="0" step="0.01" placeholder="0.00" required>
+            </div>
+            <div>
+              <label for="pStock">Stock</label>
+              <input id="pStock" name="stock" type="number" min="0" step="1" placeholder="0" required>
+            </div>
+          </div>
+
+          <label for="pCategoria">Categoría</label>
+          <input id="pCategoria" name="categoria" type="text" placeholder="Ej. Tecnología">
+
+          <label class="checkbox-label" for="pActivo">
+            <input id="pActivo" name="activo" type="checkbox" checked>
+            <span>Producto activo</span>
+          </label>
+
+          <div id="formError" class="alert alert-error" hidden></div>
+
+          <div class="modal-actions">
+            <button id="cancelModalBtn" class="btn btn-secondary" type="button">Cancelar</button>
+            <button id="saveBtn" class="btn btn-primary" type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
